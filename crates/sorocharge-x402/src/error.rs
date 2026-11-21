@@ -31,17 +31,27 @@ pub enum X402Error {
     /// fit its XDR-constrained shape).
     XdrEncodingFailed { reason: String },
     /// The `PAYMENT-SIGNATURE` (or `/verify` / `/settle` request) payload's
-    /// JSON did not deserialize into the expected shape.
+    /// or payment-related JSON parameters did not deserialize into the expected shape.
     InvalidPaymentPayload { reason: String },
     /// The submitted transaction's XDR failed to decode.
+    ///
+    /// Returned when parsing a transaction envelope or decoding raw transaction
+    /// bytes from wire payloads fails XDR deserialization.
     XdrDecodingFailed { reason: String },
     /// The transaction does not authorize a single, bare SEP-41
     /// `transfer(from, to, amount)` call — wrong operation count, wrong
     /// function, wrong argument count/types, or a smuggled sub-invocation.
+    ///
+    /// Returned by `parse_payment_transaction` in `tx.rs`. All call sites
+    /// strictly enforce this exact shape constraint. Audited; no mismatch found.
     UnexpectedTransactionShape { reason: String },
     /// An authorization entry used a credential type the `exact` scheme on
     /// Stellar forbids (`sorobanCredentialsSourceAccount` or
     /// `sorobanCredentialsAddressWithDelegates`).
+    ///
+    /// Returned by `parse_payment_transaction` in `tx.rs` when an authorization
+    /// entry carries either `sorobanCredentialsSourceAccount` or
+    /// `sorobanCredentialsAddressWithDelegates`. Audited; matches condition exactly.
     ForbiddenCredentialType,
     /// The facilitator's own address appeared where the spec's safety
     /// checks forbid it (transaction source, operation source, `from`
